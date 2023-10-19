@@ -19,7 +19,7 @@ settings = {
     "LOG_DIR": env.str("LOG_DIR", osp.join(ROOT_PATH, "logs")),
     "DATA_DIR": env.str("DATA_DIR", osp.join(ROOT_PATH, "data")),
     "CACHE_DIR": env.str("CACHE_DIR", osp.join(ROOT_PATH, "cache")),
-    # "huggingface": {"HF_TOKEN": env.str("HF_TOKEN")},
+    "huggingface": {"HF_TOKEN": env.str("HF_TOKEN")},
 }
 
 

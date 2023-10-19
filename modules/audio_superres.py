@@ -2,13 +2,13 @@ from os import path as osp
 from pathlib import Path
 from voicefixer import VoiceFixer
 
-from .common import DSPBase
+from .common import Base
 from config import settings
 
 cache_dir = osp.join(settings.CACHE_DIR, "weights", "enhancement")
 
 
-class SuperResAudio(DSPBase):
+class SuperResAudio(Base):
     MODEL_CHOICES = {
         "voicefixer": {
             "model": VoiceFixer,

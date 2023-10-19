@@ -8,7 +8,7 @@ from functools import partial
 from os import path as osp
 from denoiser.audio import Audioset
 from .common import Base
-from . import audio_ops
+from . import audio
 from .denoiser_utils import get_model
 from utils.helpers import exists
 from config import settings
@@ -34,7 +34,7 @@ class DenoiseAudio(Base):
         }
 
     def apply_denoiser(self, audio_path, **kwargs):
-        metadata = [(audio_path, audio_ops.get_audio_info(audio_path))]
+        metadata = [(audio_path, audio.get_audio_info(audio_path))]
         dataset = Audioset(
             metadata,
             with_path=False,
@@ -71,7 +71,7 @@ class DenoiseAudio(Base):
         assert exists(audio_path) or exists(audio), "Either audio_path or audio tensor is required"
 
         if save_to_file:
-            audio_info = audio_ops.get_audio_info(audio_path)
+            audio_info = audio.get_audio_info(audio_path)
             save_dir = kwargs.get("save_dir") or osp.join(settings.CACHE_DIR, "tmp", "denoiser")
 
         if isinstance(self.model, dict):
