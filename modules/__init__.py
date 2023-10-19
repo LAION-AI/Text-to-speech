@@ -1,7 +1,5 @@
 from .transcribe import TranscribeAudio
-from .diarization import SpeakerDiarization
 from .vad import VoiceActivityDetection
-from .enhance import EnhanceAudio
-from .partition import PartitionAudio
+from .denoiser import DenoiseAudio
 from .classify import ClassifySpeakerGender, classifySpeakerEmotion
-from .superres import SuperResAudio
+from .audio_superres import SuperResAudio
