@@ -1,0 +1,36 @@
+pipeline:
+  loader:
+    target: manager.Downloader
+    args:
+      configs:
+        - config/datasets/data-config.yaml
+  manager:
+    target: manager.YoutubeRunner
+  processors:
+    - name: downloader
+      target: modules.Downloader
+    - name: voice_activity_detection
+      target: modules.VoiceActivityDetection
+      args:
+        model_choice: pyannote_voice_activity_detection
+    - name: paritioning
+      target: modules.PartitionAudio
+      args:
+        model_choice: meta_demucs_mdx_extra
+    - name: denoiser
+      target: modules.DenoiseAudio
+      args:
+        model_choice: master64
+        dry: 0
+    - name: gender_classification
+      target: modules.ClassifySpeakerGender
+      args:
+        model_choice: transformers_wav2vec2_xlsr_300m
+    - name: emotion_classification
+      target: modules.classifySpeakerEmotion
+      args:
+        model_choice: speechbrain_wav2vec2_iemocap
+    - name: transcription
+      target: modules.TranscribeAudio
+      args:
+        model_choice: openai_whisper_medium
