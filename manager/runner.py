@@ -23,8 +23,8 @@ class Runner:
         "downloader",
         "speaker_diarization",
         "voice_activity_detection",
-        "paritioning",
-        "enhancement",
+        "music_separation",
+        "denoise_audio",
         "gender_classification",
         "emotion_classification",
         "transcription",
@@ -51,8 +51,6 @@ class Runner:
                 self.processors[proc.name] = {"obj": obj(**proc.args), "loaded": True}
             else:
                 self.processors[proc.name] = {"obj": obj, "loaded": False}
-
-        self.s3_handler = S3Handler()
 
     def load_processors(self, names=None, reload=False):
         if not (self.lazy_load or reload):
@@ -326,11 +324,5 @@ class ASR2TTSRunner(Runner):
             json.dump(metadata, file)
         with open(osp.join(save_dir, "metadata.json"), "w") as file:
             json.dump(chunk_metadata, file)
-
-        self.s3_handler.bulk_upload(
-            settings.aws.SAVE_BUCKET,
-            osp.join(cache_dir, "final"),
-            base_key="processed_datasets",
-        )
         shutil.rmtree(cache_dir)
         return metadata

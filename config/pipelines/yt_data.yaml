@@ -8,16 +8,18 @@ pipeline:
     target: manager.YoutubeRunner
   processors:
     - name: downloader
-      target: modules.Downloader
+      target: manager.Downloader
+      args:
+        save_dir: data/yt_data
     - name: voice_activity_detection
       target: modules.VoiceActivityDetection
       args:
         model_choice: pyannote_voice_activity_detection
-    - name: paritioning
+    - name: music_separation
       target: modules.PartitionAudio
       args:
         model_choice: meta_demucs_mdx_extra
-    - name: denoiser
+    - name: denoise_audio
       target: modules.DenoiseAudio
       args:
         model_choice: master64

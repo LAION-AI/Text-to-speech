@@ -19,7 +19,11 @@ def run(configs):
     manager = get_obj_from_str(config["manager"]["target"])(
         configs=OmegaConf.to_yaml(config)
     )
-    for file_metadata in downloader.walk_files():
+    save_dir = None
+    for processor in config["processors"]:
+        if processor["name"] == "downloader":
+            save_dir = processor["args"]["save_dir"]
+    for file_metadata in downloader.walk_files(save_dir=save_dir):
         manager(file_metadata=file_metadata)
 
 

@@ -20,6 +20,7 @@ class Downloader:
     def download_from_youtube(self, url, save_dir):
         yt = YouTube(url)
         stream = yt.streams.get_highest_resolution()
+        print(save_dir)
         save_path = os.path.join(save_dir, f"{str(uuid4())}.mp4")
         stream.download(output_path=save_path)
         metadata = {"video": save_path, "source": url}
@@ -35,14 +36,14 @@ class Downloader:
         with zipfile.ZipFile(path, 'r') as zip_ref:
             zip_ref.extractall(save_dir)
 
-    def walk_files(self, allowed_ext=None):
+    def walk_files(self, save_dir=None):
         for config in tqdm(self.configs):
             for path in tqdm(config.sources):
-                allowed_ext = allowed_ext or config.get("allowed_ext", [])
+                save_dir = save_dir or config.get("save_dir", [])
                 if "youtube.com" in path:
-                    yield from self.download_from_youtube(path, allowed_ext)
+                    yield from self.download_from_youtube(path, save_dir)
                 else:
-                    yield from self.download_from_url(path, allowed_ext)
+                    yield from self.download_from_url(path, save_dir)
 
     def download_file(self, metadata, save_dir):
         if "source" in metadata:
