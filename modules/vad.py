@@ -4,7 +4,7 @@ from pathlib import Path
 from pyannote.audio import Pipeline
 from webrtcvad import Vad
 
-from .common import DSPBase
+from .common import Base
 from . import audio as audio_ops
 from .vad_utils import vad_audio_segment
 from config import settings
@@ -12,7 +12,7 @@ from config import settings
 cache_dir = osp.join(settings.CACHE_DIR, "weights", "vad")
 
 
-class VoiceActivityDetection(DSPBase):
+class VoiceActivityDetection(Base):
     MODEL_CHOICES = {
         "pyannote_voice_activity_detection": {
             "model": partial(

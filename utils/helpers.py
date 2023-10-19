@@ -34,9 +34,11 @@ class SpecialExclusionBaseModel(BaseModel):
         return super().dict(exclude=exclude, **kwargs)
 
 
-def default(val, d):
-    return val if val is not None else (d() if callable(d) else d)
+def default(value, d):
+    return value if value is not None else (d() if callable(d) else d)
 
+def exists(value):
+    return value is not None
 
 def get_obj_from_str(string, reload=False):
     module, cls = string.rsplit(".", 1)

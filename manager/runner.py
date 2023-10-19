@@ -8,8 +8,7 @@ import shutil
 import json
 import time
 
-from .dsp.audio import convert2wav
-from .s3_handler import S3Handler
+from modules.audio import convert2wav
 from config import settings
 from utils.io import load_configs, merge_configs
 from utils.helpers import exists, get_obj_from_str

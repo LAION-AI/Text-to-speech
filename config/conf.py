@@ -19,16 +19,7 @@ settings = {
     "LOG_DIR": env.str("LOG_DIR", osp.join(ROOT_PATH, "logs")),
     "DATA_DIR": env.str("DATA_DIR", osp.join(ROOT_PATH, "data")),
     "CACHE_DIR": env.str("CACHE_DIR", osp.join(ROOT_PATH, "cache")),
-    "database": {
-        "sqlite": {"DB": env.str("SQLITE_DB", osp.join(ROOT_PATH, "dbs", "graph.db"))}
-    },
-    "aws": {
-        "KEY": env.str("AWS_KEY", None),
-        "SECRET": env.str("AWS_SECRET", None),
-        "SAVE_BUCKET": env.str("S3_SAVE_BUCKET"),
-    },
-    "huggingface": {"HF_TOKEN": env.str("HF_TOKEN")},
-    "ray": {"RAY_HEAD_URL": env.str("RAY_HEAD_URL")},
+    # "huggingface": {"HF_TOKEN": env.str("HF_TOKEN")},
 }
 
 

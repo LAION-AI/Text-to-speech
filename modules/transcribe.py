@@ -3,7 +3,7 @@ import whisper
 from os import path as osp
 from functools import partial
 from .lang_list import LANGUAGE_NAME_TO_CODE
-from .common import DSPBase
+from .common import Base
 from . import audio as audio_ops
 from utils.helpers import exists
 from config import settings
@@ -11,7 +11,7 @@ from config import settings
 cache_dir = osp.join(settings.CACHE_DIR, "weights", "transcription")
 
 
-class TranscribeAudio(DSPBase):
+class TranscribeAudio(Base):
     MODEL_CHOICES = {
         "openai_whisper_base": partial(
             whisper.load_model,
