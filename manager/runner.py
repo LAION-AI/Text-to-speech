@@ -125,111 +125,42 @@ class YoutubeRunner(Runner):
     def __call__(self, file_metadata, **kwargs):
         cache_dir = osp.join(settings.CACHE_DIR, "tmp", str(uuid4()))
 
-        dag_name = "downloader"
-        metadata, status = self.run_dag(
-            dag_name, metadata=file_metadata, save_dir=cache_dir
+        metadata = convert2wav(file_metadata["video"])
+
+        dag_name = "voice_activity_detection"
+        logger.info(f"Running pipeline -> {dag_name}")
+        now = time.time()
+        vad = self.run_dag(
+            dag_name,
+            audio_path=metadata["audio"],
+            save_to_file=True,
+            save_dir=osp.join(cache_dir, dag_name),
         )
+        metadata[dag_name] = vad
+        metadata[f"{dag_name}_proc_time"] = time.time() - now
         self.cleanup_dag(dag_name)
 
-        metadata["success"] = False
-        if not status:
-            logger.erro(f"Error downloading file: {metadata}")
-            return metadata
-
-        metadata["audio"] = convert2wav(metadata["audio"])
-
-        dag_name = "voice_activity_detection"
-        for speaker, chunks in diarization["speakers"]:
-            for c, chunk in enumerate(chunks):
-                vad = self.run_dag(
-                    dag_name,
-                    audio_path=chunk["filepath"],
-                    save_to_file=True,
-                    save_dir=osp.join(cache_dir, dag_name),
-                )
-                diarization[speaker][c][dag_name] = vad
+        dag_name = "denoise_audio"
+        logger.info(f"Running pipeline -> {dag_name}")
+        total_time = 0
+        for v, va in tqdm(
+            enumerate(metadata["voice_activity_detection"]["voice_activity"]),
+            desc=dag_name,
+        ):
+            now = time.time()
+            enhanced_audio = self.run_dag(
+                dag_name,
+                audio_path=va["filepath"],
+                save_to_file=True,
+                save_dir=osp.join(cache_dir, dag_name, osp.split(va["filepath"])[-1]),
+            )
+            proc_time = time.time() - now
+            metadata["voice_activity_detection"]["voice_activity"][v].update(
+                {dag_name: enhanced_audio, "enhancement_proc_time": proc_time}
+            )
+            total_time += proc_time
+        metadata[f"{dag_name}_proc_time"] = total_time
         self.cleanup_dag(dag_name)
-
-        dag_name = "partitioning"
-        for speaker, chunks in diarization["speakers"]:
-            for c, chunk in enumerate(chunks):
-                for v, va in enumerate(
-                    chunk["voice_activity_detection"]["voice_activity"]
-                ):
-                    partitions = self.run_dag(
-                        dag_name,
-                        audio_path=va["filepath"],
-                        save_to_file=True,
-                        save_dir=osp.join(cache_dir, dag_name),
-                    )
-                    diarization[speaker][c]["voice_activity_detection"][
-                        "voice_activity"
-                    ][v][dag_name] = partitions
-        self.cleanup_dag(dag_name)
-
-        dag_name = "enhancement"
-        for speaker, chunks in diarization["speakers"]:
-            for c, chunk in enumerate(chunks):
-                for v, va in enumerate(
-                    chunk["voice_activity_detection"]["voice_activity"]
-                ):
-                    enhanced_audio = self.run_dag(
-                        dag_name,
-                        audio_path=va["partitioning"][0],
-                        save_to_file=True,
-                        save_dir=osp.join(cache_dir, dag_name),
-                    )
-                    diarization[speaker][c]["voice_activity_detection"][
-                        "voice_activity"
-                    ][v][dag_name] = enhanced_audio
-        self.cleanup_dag(dag_name)
-
-        dag_name = "voice_activity_detection"
-        for speaker, chunks in diarization["speakers"]:
-            for c, chunk in enumerate(chunks):
-                for v, va in enumerate(
-                    chunk["voice_activity_detection"]["voice_activity"]
-                ):
-                    vad = self.run_dag(
-                        dag_name,
-                        audio_path=va["enchancement"],
-                        save_to_file=True,
-                        save_dir=osp.join(cache_dir, dag_name),
-                    )
-                    diarization[speaker][c]["voice_activity_detection_2"] = vad
-        self.cleanup_dag(dag_name)
-
-        dag_name = "gender_classification"
-        gender_dict = {}
-        for speaker, chunks in diarization["speakers"]:
-            for c, chunk in enumerate(chunks):
-                for v, va in enumerate(
-                    chunk["voice_activity_detection_2"]["voice_activity"]
-                ):
-                    gender = self.run_dag(
-                        dag_name,
-                        audio_path=va["filepath"],
-                    )
-                    if gender:
-                        gender_dict[speaker] = gender
-                        break
-                if speaker in gender_dict:
-                    break
-        self.cleanup_dag(dag_name)
-
-        for speaker, chunks in diarization["speakers"]:
-            for c, chunk in enumerate(chunks):
-                for v, va in enumerate(
-                    chunk["voice_activity_detection_2"]["voice_activity"]
-                ):
-                    # TODO: Copy chunks to directory structure
-                    emotion = self.run_dag(
-                        "emotion_classification", audio_path=va["filepath"]
-                    )
-                    transcription = self.run_dag(
-                        "transcription", audio_path=va["filepath"]
-                    )
-        self.cleanup_dag(["emotion_classification", "transcription"])
         return metadata
 
 

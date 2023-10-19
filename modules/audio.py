@@ -45,7 +45,7 @@ def get_duration(wave_file, sr=16000):
 
 def convert2wav(audio_path):
     ext = Path(audio_path).suffix.lower()
-    supported_ext = [".sph", ".wav", ".mp3", ".flac", ".ogg"]
+    supported_ext = [".sph", ".wav", ".mp3", ".flac", ".ogg", ".mp4"]
 
     if ext not in supported_ext:
         raise NotImplementedError(f"Audio format {ext} is not supported")

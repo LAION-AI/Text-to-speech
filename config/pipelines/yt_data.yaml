@@ -4,13 +4,10 @@ pipeline:
     args:
       configs:
         - config/datasets/data-config.yaml
+      save_dir: data/yt_data
   manager:
     target: manager.YoutubeRunner
   processors:
-    - name: downloader
-      target: manager.Downloader
-      args:
-        save_dir: data/yt_data
     - name: voice_activity_detection
       target: modules.VoiceActivityDetection
       args:

@@ -11,23 +11,22 @@ from utils.helpers import exists
 from config import settings
 
 class Downloader:
-    def __init__(self, configs=None) -> None:
+    def __init__(self, configs=None, save_dir="data/") -> None:
         if exists(configs):
             self.configs = [load_configs(config) for config in configs]
         else:
             self.configs = None
-
-    def download_from_youtube(self, url, save_dir):
+        self.save_dir = save_dir
+    def download_from_youtube(self, url):
         yt = YouTube(url)
         stream = yt.streams.get_highest_resolution()
-        print(save_dir)
-        save_path = os.path.join(save_dir, f"{str(uuid4())}.mp4")
-        stream.download(output_path=save_path)
-        metadata = {"video": save_path, "source": url}
+        save_path = os.path.join(self.save_dir, f"{str(uuid4())}")
+        file_path = stream.download(output_path=save_path)
+        metadata = {"video": file_path, "source": url}
         return (metadata, True)
 
-    def download_from_url(self, url, save_dir):
-        save_path = os.path.join(save_dir, f"{str(uuid4())}.zip")
+    def download_from_url(self, url):
+        save_path = os.path.join(self.save_dir, f"{str(uuid4())}.zip")
         wget.download(url, save_path)
         metadata = {"file": save_path, "source": url}
         return (metadata, True)
@@ -39,9 +38,9 @@ class Downloader:
     def walk_files(self, save_dir=None):
         for config in tqdm(self.configs):
             for path in tqdm(config.sources):
-                save_dir = save_dir or config.get("save_dir", [])
+                save_dir = self.save_dir or config.get("save_dir", [])
                 if "youtube.com" in path:
-                    yield from self.download_from_youtube(path, save_dir)
+                    yield from self.download_from_youtube(path)
                 else:
                     yield from self.download_from_url(path, save_dir)
 
