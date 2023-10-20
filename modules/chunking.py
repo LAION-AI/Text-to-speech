@@ -18,7 +18,8 @@ class AudioChunking(Base):
     def __init__(self, model_choice: str, **kwargs) -> None:
         super().__init__(model_choice, **kwargs)
 
-    def chunk_by_silence(self, audio_path, silence_len=500, silence_thresh=-30, **kwargs) -> Any:
+    def chunk_by_silence(self, audio_path, silence_len=800, silence_thresh=-40, min_chunk_len=2.0,
+                         max_chunk_len=25, **kwargs) -> Any:
         audio_info = audio.get_audio_info(audio_path)
         audio_segment = AudioSegment.from_wav(audio_path)
 
@@ -31,8 +32,11 @@ class AudioChunking(Base):
         total_chunk_duration = 0
 
         for i, chunk in enumerate(chunks):
+            chunk_duration = chunk.duration_seconds
+            if chunk_duration < min_chunk_len or chunk_duration > max_chunk_len:
+                continue
             meta = {
-                "duration": chunk.duration_seconds,
+                "duration": chunk_duration,
                 "filepath": None,
                 "sample_rate": chunk.frame_rate,
             }

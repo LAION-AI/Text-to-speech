@@ -2,6 +2,7 @@ from typing import Any, Union, Optional
 import torch
 import argparse
 from os import path as osp
+import os
 from functools import partial
 from denoiser.audio import Audioset
 
@@ -102,7 +103,33 @@ class DenoiseAudio(Base):
             **kwargs,
         )
         self.dry = dry
+    def save_to_file(self, audio, sr, save_dir, audio_path, start_dur=None, stop_dur=None):
+        # Handling audio with more than 2 dimensions
+        if audio.ndim > 2:
+            print(f"Warning: Audio has {audio.ndim} dimensions, averaging over channels for simplicity.")
+            audio = torch.mean(audio, dim=-1)
 
+        if exists(start_dur):
+            start_sample = round(start_dur * sr)
+            audio = audio[start_sample:]
+            
+        if exists(stop_dur):
+            stop_sample = round(stop_dur * sr)
+            audio = audio[:stop_sample]
+
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        if audio.ndim == 1:
+            audio = audio.unsqueeze(0)
+        original_file_name = osp.basename(audio_path)
+        save_path = (
+            os.path.join(save_dir, original_file_name)
+            if not os.path.splitext(save_dir)[-1]
+            else save_dir
+        )
+        audio_ops.save_audio(wav=audio, path=save_path, sr=sr)
+        return save_path
     def enhance_with_denoiser(self, audio_path, save_to_file=False, **kwargs):
         metadata = [(audio_path, audio_ops.get_audio_info(audio_path))]
         dataset = Audioset(
@@ -120,7 +147,7 @@ class DenoiseAudio(Base):
             save_dir = kwargs.get("save_dir")
             enhanced_audio = estimate.detach().cpu().squeeze(0)
             denoised_path = self.save_to_file(
-                enhanced_audio, sr=16000, save_dir=save_dir
+                enhanced_audio, sr=16000, save_dir=save_dir, audio_path=audio_path
             )
         return denoised_path
 
