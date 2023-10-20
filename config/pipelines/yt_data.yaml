@@ -4,32 +4,15 @@ pipeline:
     args:
       configs:
         - config/datasets/data-config.yaml
-      save_dir: data/yt_data
+      save_dir: raw_data/yt_data
   manager:
     target: manager.YoutubeRunner
   processors:
-    - name: voice_activity_detection
-      target: modules.VoiceActivityDetection
+    - name: chunking
+      target: modules.AudioChunking
       args:
-        model_choice: pyannote_voice_activity_detection
-    - name: music_separation
-      target: modules.PartitionAudio
-      args:
-        model_choice: meta_demucs_mdx_extra
+        model_choice: pydub_chunking
     - name: denoise_audio
       target: modules.DenoiseAudio
       args:
-        model_choice: master64
-        dry: 0
-    - name: gender_classification
-      target: modules.ClassifySpeakerGender
-      args:
-        model_choice: transformers_wav2vec2_xlsr_300m
-    - name: emotion_classification
-      target: modules.classifySpeakerEmotion
-      args:
-        model_choice: speechbrain_wav2vec2_iemocap
-    - name: transcription
-      target: modules.TranscribeAudio
-      args:
-        model_choice: openai_whisper_medium
+        model_choice: meta_denoiser_dns48

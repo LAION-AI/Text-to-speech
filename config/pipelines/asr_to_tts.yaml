@@ -17,7 +17,6 @@ pipeline:
       target: modules.DenoiseAudio
       args:
         model_choice: master64
-        dry: 0
     - name: superres
       target: modules.SuperResAudio
       args:

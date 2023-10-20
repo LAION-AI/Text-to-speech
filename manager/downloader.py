@@ -1,4 +1,5 @@
 import os
+import re
 import zipfile
 from uuid import uuid4
 from tqdm import tqdm
@@ -13,7 +14,7 @@ from config import settings
 class Downloader:
     def __init__(self, configs=None, save_dir="data/") -> None:
         if exists(configs):
-            self.configs = [load_configs(config) for config in configs]
+            self.configs = load_configs(configs[0])
         else:
             self.configs = None
         self.save_dir = save_dir
@@ -22,7 +23,17 @@ class Downloader:
         stream = yt.streams.get_highest_resolution()
         save_path = os.path.join(self.save_dir, f"{str(uuid4())}")
         file_path = stream.download(output_path=save_path)
-        metadata = {"video": file_path, "source": url}
+
+        directory, filename = os.path.split(file_path)
+        file_root, file_extension = os.path.splitext(filename)
+        sanitized_root = re.sub(r"[^a-zA-Z0-9 ]", "", file_root)
+        sanitized_root = sanitized_root.replace(" ", "_")
+        
+        new_filename = f"{sanitized_root}{file_extension}"
+        new_file_path = os.path.join(directory, new_filename)
+        
+        os.rename(file_path, new_file_path)
+        metadata = {"video": new_file_path, "source": url}
         return (metadata, True)
 
     def download_from_url(self, url):
@@ -36,13 +47,14 @@ class Downloader:
             zip_ref.extractall(save_dir)
 
     def walk_files(self, save_dir=None):
-        for config in tqdm(self.configs):
-            for path in tqdm(config.sources):
-                save_dir = self.save_dir or config.get("save_dir", [])
-                if "youtube.com" in path:
-                    yield from self.download_from_youtube(path)
-                else:
-                    yield from self.download_from_url(path, save_dir)
+        for path in tqdm(self.configs.sources):
+            save_dir = self.save_dir or self.configs.get("save_dir", [])
+            if "youtube.com" in path:
+                metadata, _ = self.download_from_youtube(path)
+                yield metadata
+            else:
+                metadata, _ = self.download_from_url(path, save_dir)
+                yield metadata
 
     def download_file(self, metadata, save_dir):
         if "source" in metadata:

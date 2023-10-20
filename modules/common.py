@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from typing import Union, Optional, Any
 from functools import partial
-from os import path as osp
+import os
 from abc import abstractmethod
 
 from . import audio as audio_ops
@@ -79,19 +79,29 @@ class Base:
         return prediction
 
     def save_to_file(self, audio, sr, save_dir, start_dur=None, stop_dur=None):
-        # TODO: Handle ndim > 2
+        # Handling audio with more than 2 dimensions
+        if audio.ndim > 2:
+            print(f"Warning: Audio has {audio.ndim} dimensions, averaging over channels for simplicity.")
+            audio = torch.mean(audio, dim=-1)
+
         if exists(start_dur):
-            audio = audio[start_dur * sr]
+            start_sample = round(start_dur * sr)
+            audio = audio[start_sample:]
+            
         if exists(stop_dur):
-            audio = audio[: (stop_dur * sr) + 1]
+            stop_sample = round(stop_dur * sr)
+            audio = audio[:stop_sample]
+
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
 
         if audio.ndim == 1:
             audio = audio.unsqueeze(0)
 
         save_path = (
-            osp.join(save_dir, f"{str(uuid4())}.wav")
-            if not osp.splitext(save_dir)[-1]
+            os.path.join(save_dir, f"{str(uuid4())}.wav")
+            if not os.path.splitext(save_dir)[-1]
             else save_dir
         )
-        audio_ops.save_audio(wav=audio, path=save_path, samplerate=sr)
+        audio_ops.save_audio(wav=audio, path=save_path, sr=sr)
         return save_path

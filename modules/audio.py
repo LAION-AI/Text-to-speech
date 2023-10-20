@@ -2,12 +2,21 @@ import torchaudio
 import lameenc
 from pathlib import Path
 from os import system as os_system
+from collections import namedtuple
 
 FFMPEG_BIN = "ffmpeg"
-
+Info = namedtuple("Info", ["length", "sample_rate", "channels"])
 def load_audio(audio_path):
     audio, sr = torchaudio.load(audio_path)
     return audio, sr
+
+def get_audio_info(audio_path):
+    info = torchaudio.info(audio_path)
+    if hasattr(info, "num_frames"):
+        return Info(info.num_frames, info.sample_rate, info.num_channels)
+    else:
+        siginfo = info[0]
+        return Info(siginfo.length // siginfo.channels, siginfo.rate, siginfo.channels)
 
 def normalize_audio(wav):
     return wav / max(wav.abs().max().item(), 1)

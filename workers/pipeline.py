@@ -29,11 +29,11 @@ if __name__ == "__main__":
         description="Run data workers for preparing tts audio datasets",
     )
     parser.add_argument(
-        "--configs",
+        "--config",
         nargs="+",
-        help="Config file path(s) for pipeline orchestration"
-        "Configs will be merged from left to right",
+        help="Config file path for pipeline orchestration"
+        "Config will be merged from left to right",
     )
     args = parser.parse_args()
 
-    run(args.configs)
+    run(args.config)

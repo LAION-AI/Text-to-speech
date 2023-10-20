@@ -97,6 +97,11 @@ def get_model(args):
             "Loading pre-trained real time H=64 model trained on DNS and Valentini."
         )
         model = master64(args.hub_dir)
+    elif args.dns48:
+        logger.info(
+            "Loading pre-trained real time H=48 model trained on DNS and Valentini."
+        )
+        model = dns48(args.hub_dir)
     elif args.valentini_nc:
         logger.info("Loading pre-trained H=64 model trained on Valentini.")
         model = valentini_nc(args.hub_dir)
@@ -104,4 +109,4 @@ def get_model(args):
         logger.info("Loading pre-trained real time H=48 model trained on DNS.")
         model = dns48(args.hub_dir)
     logger.debug(model)
-    return model
+    return model.cuda()
