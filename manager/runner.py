@@ -162,6 +162,7 @@ class YoutubeRunner(Runner):
         dag_name = "audio_superres"
         logger.info(f"Running pipeline -> {dag_name}")
         total_time = 0
+        
         for v, va in tqdm(
             enumerate(file_metadata["chunking"]["audio_chunks"]),
             desc=dag_name,
@@ -171,7 +172,7 @@ class YoutubeRunner(Runner):
                 dag_name,
                 audio_path=va["filepath"],
                 save_to_file=True,
-                save_dir=osp.join("data", file_metadata["video"].split("/")[-1][:-4],"denoise_audio"),
+                save_dir=osp.join("data", file_metadata["video"].split("/")[-1][:-4],"superres_audio"),
             )
             proc_time = time.time() - now
             file_metadata["chunking"]["audio_chunks"][v].update(

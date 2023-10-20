@@ -16,3 +16,7 @@ pipeline:
       target: modules.DenoiseAudio
       args:
         model_choice: meta_denoiser_dns48
+    - name: audio_superres
+      target: modules.SuperResAudio
+      args:
+        model_choice: voicefixer

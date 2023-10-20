@@ -6,7 +6,6 @@ python-json-logger
 pydantic
 requests
 omegaconf
-speechbrain
 transformers
 torchvision
 denoiser
@@ -15,6 +14,8 @@ sphfile
 pytube
 wget
 voicefixer
+audiosr==0.0.5
+librosa
 git+https://github.com/openai/whisper.git
 git+https://github.com/facebookresearch/demucs#egg=demucs
 git+https://github.com/pyannote/pyannote-audio.git
