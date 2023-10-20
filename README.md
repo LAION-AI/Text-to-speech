@@ -39,3 +39,6 @@ If new feature extractors or manager are required for your needs, check the `mod
 ```
 python workers/pipeline.py --configs <space separated path to config(s)> 
 ```
+## Acknowledgements
+credit a few of the amazing folks in the community that have helped to this happen:
+- [bud-studio](https://bud.studio/) - For providing a initial framework
