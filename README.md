@@ -34,9 +34,9 @@ pipeline:
 
 **Pipeline Schema**
 
-**Loader**: The entry point for fetching data from various sources like S3, local systems, or blob storage.
-**Manager**: Specifies the manager class responsible for running the pipeline.
-**Processors**: An ordered list of processors to apply for feature extraction or other manipulations.
+- **Loader**: The entry point for fetching data from various sources like S3, local systems, or blob storage.
+- **Manager**: Specifies the manager class responsible for running the pipeline.
+- **Processors**: An ordered list of processors to apply for feature extraction or other manipulations.
 
 
 If new feature extractors or manager are required for your needs, check the `modules/` directory for understanding the structure and create or update the objects as needed.
