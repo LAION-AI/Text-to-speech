@@ -52,4 +52,4 @@ class SuperResAudio(Base):
             cuda=True,  # GPU acceleration
             mode=0,
         )
-        return save_dir
+        return osp.join(save_dir,original_file_name)

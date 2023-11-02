@@ -1,5 +1,6 @@
 import torch
 import whisper
+from transformers import pipeline
 from os import path as osp
 from functools import partial
 from .lang_list import LANGUAGE_NAME_TO_CODE

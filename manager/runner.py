@@ -159,10 +159,9 @@ class YoutubeRunner(Runner):
         file_metadata[f"{dag_name}_proc_time"] = total_time
         self.cleanup_dag(dag_name)
 
-        dag_name = "audio_superres"
+        dag_name = "denoise_audio"
         logger.info(f"Running pipeline -> {dag_name}")
         total_time = 0
-        
         for v, va in tqdm(
             enumerate(file_metadata["chunking"]["audio_chunks"]),
             desc=dag_name,
@@ -172,6 +171,29 @@ class YoutubeRunner(Runner):
                 dag_name,
                 audio_path=va["filepath"],
                 save_to_file=True,
+                save_dir=osp.join("data", file_metadata["video"].split("/")[-1][:-4],"denoise_audio"),
+            )
+            proc_time = time.time() - now
+            file_metadata["chunking"]["audio_chunks"][v].update(
+                {dag_name: enhanced_audio, "enhancement_proc_time": proc_time}
+            )
+            total_time += proc_time
+        file_metadata[f"{dag_name}_proc_time"] = total_time
+        self.cleanup_dag(dag_name)
+
+        dag_name = "audio_superres"
+        logger.info(f"Running pipeline -> {dag_name}")
+        total_time = 0
+
+        for v, va in tqdm(
+            enumerate(file_metadata["chunking"]["audio_chunks"]),
+            desc=dag_name,
+        ):
+            now = time.time()
+            enhanced_audio = self.run_dag(
+                dag_name,
+                audio_path=va["denoise_audio"],
+                save_to_file=True,
                 save_dir=osp.join("data", file_metadata["video"].split("/")[-1][:-4],"superres_audio"),
             )
             proc_time = time.time() - now
@@ -179,6 +201,35 @@ class YoutubeRunner(Runner):
                 {dag_name: enhanced_audio, "enhancement_proc_time": proc_time}
             )
             total_time += proc_time
+        file_metadata[f"{dag_name}_proc_time"] = total_time
+        self.cleanup_dag(dag_name)
+
+        dag_name = "transcription"
+        logger.info(f"Running pipeline -> {dag_name}")
+        total_time = 0
+        print(file_metadata)
+        for v, va in tqdm(
+            enumerate(file_metadata["chunking"]["audio_chunks"]),
+            desc=dag_name,
+        ):
+            now = time.time()
+            transcription = self.run_dag(
+                dag_name,
+                audio_path=va["audio_superres"]
+            )
+            proc_time = time.time() - now
+            total_time += proc_time
+            transcript_path = osp.join("data", file_metadata["video"].split("/")[-1][:-4],"transcription")
+            
+            make_path = Path(transcript_path)
+            make_path.mkdir(parents=True, exist_ok=True)
+
+            file_path = transcript_path+"/"+va["filepath"].split("/")[-1][:-4]+".txt"
+            with open(file_path, 'w', encoding='utf-8') as transcript_file:
+                transcript_file.write(transcription)
+            file_metadata["chunking"]["audio_chunks"][v].update(
+                    {dag_name: enhanced_audio, "enhancement_proc_time": proc_time}
+                )
         file_metadata[f"{dag_name}_proc_time"] = total_time
         self.cleanup_dag(dag_name)
         return file_metadata

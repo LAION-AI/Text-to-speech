@@ -20,3 +20,7 @@ pipeline:
       target: modules.SuperResAudio
       args:
         model_choice: voicefixer
+    - name: transcription
+      target: modules.TranscribeAudio
+      args:
+        model_choice: openai_whisper_base
