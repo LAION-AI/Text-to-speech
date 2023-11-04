@@ -159,28 +159,6 @@ class YoutubeRunner(Runner):
         file_metadata[f"{dag_name}_proc_time"] = total_time
         self.cleanup_dag(dag_name)
 
-        dag_name = "denoise_audio"
-        logger.info(f"Running pipeline -> {dag_name}")
-        total_time = 0
-        for v, va in tqdm(
-            enumerate(file_metadata["chunking"]["audio_chunks"]),
-            desc=dag_name,
-        ):
-            now = time.time()
-            enhanced_audio = self.run_dag(
-                dag_name,
-                audio_path=va["filepath"],
-                save_to_file=True,
-                save_dir=osp.join("data", file_metadata["video"].split("/")[-1][:-4],"denoise_audio"),
-            )
-            proc_time = time.time() - now
-            file_metadata["chunking"]["audio_chunks"][v].update(
-                {dag_name: enhanced_audio, "enhancement_proc_time": proc_time}
-            )
-            total_time += proc_time
-        file_metadata[f"{dag_name}_proc_time"] = total_time
-        self.cleanup_dag(dag_name)
-
         dag_name = "audio_superres"
         logger.info(f"Running pipeline -> {dag_name}")
         total_time = 0
